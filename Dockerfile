@@ -75,5 +75,9 @@ RUN /opt/tensorrt/python/python_setup.sh
 ENV QT_X11_NO_MITSHM=1
 
 # Return to project directory and open a terminal
-WORKDIR /mnt
+WORKDIR /object-detection-tensorrt-example
+COPY . .
+
 CMD /bin/bash
+
+# python SSD_Model/detect_objects_webcam.py

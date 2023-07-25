@@ -16,15 +16,11 @@ else
 	tar -xf VOCtest_06-Nov-2007.tar
 fi
 
-# Build the dockerfile for the engironment 
-if [ ! -z $(docker images -q object_detection_webcam:latest) ]; then 
-	echo "Dockerfile has already been built"
-else
-	echo "Building docker image" 
-	docker build -f dockerfiles/Dockerfile --tag=object_detection_webcam .
-fi
+echo "Building docker image" 
+docker build -f Dockerfile --tag=object_detection_webcam .
 
 # Start the docker container
 echo "Starting docker container" 
 export CAMERA_SIMULATOR_CONTAINER_ID=$(docker ps -q)
-docker run --network=container:${CAMERA_SIMULATOR_CONTAINER_ID} --runtime=nvidia -it -v `pwd`:/mnt -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH object_detection_webcam:latest
+# docker run --network=container:${CAMERA_SIMULATOR_CONTAINER_ID} --runtime=nvidia -it -v `pwd`:/mnt -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH object_detection_webcam:latest
+docker run --network=container:${CAMERA_SIMULATOR_CONTAINER_ID} --runtime=nvidia -it -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH object_detection_webcam:latest
