@@ -80,4 +80,4 @@ COPY . .
 
 CMD /bin/bash
 
-# python SSD_Model/detect_objects_webcam.py
+# python SSD_Model/detect_objects.py
