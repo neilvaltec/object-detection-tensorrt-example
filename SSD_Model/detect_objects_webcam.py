@@ -158,33 +158,52 @@ def main():
 
     print("TRT ENGINE PATH", args.trt_engine_path)
 
-    if args.camera == True:
-        print('Running webcam:', args.camera)
-        # Define the video stream
-        cap = cv2.VideoCapture(0)  # Change only if you have more than one webcams
+    # Define the video stream
+    cap = cv2.VideoCapture("rtsp://localhost:8554/drone_camera")  # Change only if you have more than one webcams
 
-        # Loop for running inference on frames from the webcam
-        while True:
-            # Read frame from camera (and expand its dimensions to fit)
-            ret, image_np = cap.read()
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    out = cv2.VideoWriter('/mnt/output.mp4',cv2.VideoWriter_fourcc(*'mp4v'), 60, (width,height))
 
-            # Actually run inference
-            detection_out, keep_count_out = trt_inference_wrapper.infer_webcam(image_np)
+    # Initialize flags
+    flag1 = False
+    flag2 = False
+    while True:
+        # Read frame from camera (and expand its dimensions to fit)
+        ret, image_np = cap.read()
+        print(ret)
+        
+        ## break if continuous three false frame
+        if not ret:
+            if flag1:
+                if flag2:
+                    break
+                else:
+                    flag2 = True
+            else:
+                flag1 = True
+            continue
 
-            # Overlay the bounding boxes on the image
-            # let analyze_prediction() draw them based on model output
-            img_pil = Image.fromarray(image_np)
-            prediction_fields = len(TRT_PREDICTION_LAYOUT)
-            for det in range(int(keep_count_out[0])):
-                analyze_prediction(detection_out, det * prediction_fields, img_pil)
-            final_img = np.asarray(img_pil)
+        # Reset flags when a frame is successfully read
+        flag1 = False
+        flag2 = False
+        # Actually run inference
+        detection_out, keep_count_out = trt_inference_wrapper.infer_webcam(image_np)
 
-            # Display output
-            cv2.imshow('object detection', final_img)
+        # Overlay the bounding boxes on the image
+        # let analyze_prediction() draw them based on model output
+        img_pil = Image.fromarray(image_np)
+        prediction_fields = len(TRT_PREDICTION_LAYOUT)
+        for det in range(int(keep_count_out[0])):
+            analyze_prediction(detection_out, det * prediction_fields, img_pil)
+        final_img = np.asarray(img_pil)
 
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                cv2.destroyAllWindows()
-                break
+        # # Display output
+        # cv2.imwrite("/mnt/output_rtsp.jpg", final_img)
+        out.write(final_img)
+
+    cap.release()
+    out.release()
 
 if __name__ == '__main__':
     main()

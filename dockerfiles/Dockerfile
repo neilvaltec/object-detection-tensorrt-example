@@ -1,5 +1,5 @@
 ### ----- INSTALL TENSORRT ----- ###
-FROM nvcr.io/nvidia/tensorrt:19.05-py3
+FROM nvcr.io/nvidia/tensorrt:20.10-py3
 
 ### ----- INSTALL TENSORRT OPEN SOURCE SOFTWARE ----- ###
 # Install required libraries
@@ -44,6 +44,8 @@ RUN cd /workspace/TensorRT-OSS/build/out &&\
 # Install OpenCV
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y libsm6 libxext6 libxrender-dev python3-tk
+# install ffmpeg because we want video intput function as well
+RUN apt update && apt install -y pkg-config ffmpeg libavformat-dev libavcodec-dev libswscale-dev
 RUN pip install opencv-python
 
 # Install miscellaneous Python packages

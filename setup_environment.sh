@@ -25,4 +25,4 @@ fi
 
 # Start the docker container
 echo "Starting docker container" 
-docker run --runtime=nvidia -it -v `pwd`:/mnt --device=/dev/video0 -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH object_detection_webcam 
+docker run --runtime=nvidia -it -v `pwd`:/mnt -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH object_detection_webcam 
