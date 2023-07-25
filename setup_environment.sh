@@ -1,9 +1,10 @@
-# So that docker can see the webcam
-echo "Setting envivonment variables for the webcam" 
-xhost +local:docker
-XSOCK=/tmp/.X11-unix
-XAUTH=/tmp/.docker.xauth
-xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+set -e
+# # So that docker can see the webcam
+# echo "Setting envivonment variables for the webcam" 
+# xhost +local:docker
+# XSOCK=/tmp/.X11-unix
+# XAUTH=/tmp/.docker.xauth
+# xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
 
 # Download the VOC dataset for INT8 Calibration 
 DATA_DIR=VOCdevkit
@@ -15,7 +16,7 @@ else
 	tar -xf VOCtest_06-Nov-2007.tar
 fi
 
-# Build the dockerfile for the engironment 
+Build the dockerfile for the engironment 
 if [ ! -z $(docker images -q object_detection_webcam:latest) ]; then 
 	echo "Dockerfile has already been built"
 else
@@ -25,4 +26,4 @@ fi
 
 # Start the docker container
 echo "Starting docker container" 
-docker run --runtime=nvidia -it -p 8554:8554 -v `pwd`:/mnt -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH object_detection_webcam 
+docker run --runtime=nvidia -it -p 8554:8554 -v `pwd`:/mnt -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH object_detection_webcam:latest

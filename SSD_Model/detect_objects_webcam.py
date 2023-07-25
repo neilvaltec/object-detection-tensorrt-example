@@ -160,10 +160,18 @@ def main():
 
     # Define the video stream
     cap = cv2.VideoCapture("rtsp://localhost:8554/drone_camera")  # Change only if you have more than one webcams
-
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    out = cv2.VideoWriter('/mnt/output.mp4',cv2.VideoWriter_fourcc(*'mp4v'), 60, (width,height))
+    fps = 60
+    
+    # define output rtsp stream
+    out = cv2.VideoWriter('appsrc ! videoconvert' + \
+        ' ! x264enc speed-preset=ultrafast bitrate=600 key-int-max=' + str(fps * 2) + \
+        ' ! video/x-h264,profile=baseline' + \
+        ' ! rtspclientsink location=rtsp://localhost:8554/mediapipe_output',
+        cv2.CAP_GSTREAMER, 0, fps, (width, height), True)
+    if not out.isOpened():
+        raise Exception("can't open video writer")
 
     # Initialize flags
     flag1 = False
