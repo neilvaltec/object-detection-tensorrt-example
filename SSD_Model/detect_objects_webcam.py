@@ -160,10 +160,25 @@ def main():
 
     # Define the video stream
     cap = cv2.VideoCapture("rtsp://localhost:8554/drone_camera")  # Change only if you have more than one webcams
-
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    out = cv2.VideoWriter('/mnt/output.mp4',cv2.VideoWriter_fourcc(*'mp4v'), 60, (width,height))
+    fps = 60
+    
+    # define output rtsp stream
+    out = cv2.VideoWriter('appsrc ! videoconvert' + \
+        ' ! x264enc speed-preset=ultrafast bitrate=600 key-int-max=' + str(fps * 2) + \
+        ' ! video/x-h264,profile=baseline' + \
+        ' ! rtspclientsink location=rtsp://localhost:8554/AI_output',
+        cv2.CAP_GSTREAMER, 0, fps, (width, height), True)
+    if not out.isOpened():
+        raise Exception("can't open video writer")
+
+    # Visualization parameters
+    row_size = 20  # pixels
+    left_margin = 24  # pixels
+    text_color = (0, 0, 255)  # red
+    font_size = 1
+    font_thickness = 1
 
     # Initialize flags
     flag1 = False
@@ -188,7 +203,7 @@ def main():
         flag1 = False
         flag2 = False
         # Actually run inference
-        detection_out, keep_count_out = trt_inference_wrapper.infer_webcam(image_np)
+        detection_out, keep_count_out, infer_fps = trt_inference_wrapper.infer_webcam(image_np)
 
         # Overlay the bounding boxes on the image
         # let analyze_prediction() draw them based on model output
@@ -197,6 +212,12 @@ def main():
         for det in range(int(keep_count_out[0])):
             analyze_prediction(detection_out, det * prediction_fields, img_pil)
         final_img = np.asarray(img_pil)
+
+        # Show the FPS
+        fps_text = 'model inference FPS = {:.1f}'.format(infer_fps)
+        text_location = (left_margin, row_size)
+        cv2.putText(final_img, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
+                    font_size, text_color, font_thickness)
 
         # # Display output
         # cv2.imwrite("/mnt/output_rtsp.jpg", final_img)

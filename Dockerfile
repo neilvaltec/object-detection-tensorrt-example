@@ -42,11 +42,31 @@ RUN cd /workspace/TensorRT-OSS/build/out &&\
 ### ----- INSTALL PACKAGES FOR RUNNING WEBCAM INFERENCE ----- ###
 
 # Install OpenCV
+WORKDIR /
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y libsm6 libxext6 libxrender-dev python3-tk
-# install ffmpeg because we want video intput function as well
-RUN apt update && apt install -y pkg-config ffmpeg libavformat-dev libavcodec-dev libswscale-dev
-RUN pip install opencv-python
+RUN apt update && apt install -y pkg-config \
+  ffmpeg \
+  libavformat-dev \
+  libavcodec-dev \
+  libswscale-dev \
+  cmake \
+  libgstreamer1.0-dev \
+  libgstreamer-plugins-base1.0-dev \
+  gstreamer1.0-plugins-ugly \
+  gstreamer1.0-rtsp \
+  python3-dev \
+  python3-numpy
+
+RUN git clone --depth=1 -b 4.5.4 https://github.com/opencv/opencv
+RUN cd opencv && \
+    mkdir build && cd build && \
+    cmake -D CMAKE_INSTALL_PREFIX=/usr -D WITH_GSTREAMER=ON .. && \
+    make -j$(nproc)  && \
+    make install 
+
+# RUN mkdir /usr/lib/python3.6/dist-packages
+# RUN ln -s /usr/lib/python3.6/site-packages/cv2 /usr/lib/python3.6/dist-packages/
 
 # Install miscellaneous Python packages
 RUN /opt/tensorrt/python/python_setup.sh
@@ -55,5 +75,9 @@ RUN /opt/tensorrt/python/python_setup.sh
 ENV QT_X11_NO_MITSHM=1
 
 # Return to project directory and open a terminal
-WORKDIR /mnt
+WORKDIR /object-detection-tensorrt-example
+COPY . .
+
 CMD /bin/bash
+
+# python SSD_Model/detect_objects_webcam.py

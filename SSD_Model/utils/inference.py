@@ -187,11 +187,12 @@ class TRTInference(object):
             outputs=self.outputs, stream=self.stream)
 
         # Output inference time
-        print("TensorRT inference time: {} ms".format(
-            int(round((time.time() - inference_start_time) * 1000))))
+        infer_time = int(round((time.time() - inference_start_time) * 1000))
+        infer_fps = 1.0 / infer_time * 1000
+        print("TensorRT inference time: {} ms".format(infer_time))
 
         # And return results
-        return detection_out, keepCount_out
+        return detection_out, keepCount_out, infer_fps
 
     def infer_batch(self, image_paths):
         """Infers model on batch of same sized images resized to fit the model.
